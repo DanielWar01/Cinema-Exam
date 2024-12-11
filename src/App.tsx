@@ -62,24 +62,28 @@ function App() {
           </h2>
           
           <div className="flex flex-col items-center">
-          <div style={{ display: 'grid', gap: '10px', justifyContent: 'center' }}>
-          {seats.map((row, rowIndex) => (
-            <div style={{ display: 'flex', gap: '5px' }} key={rowIndex}>
-              {row.map((seat, seatIndex) => (
-                <button
-                  key={seatIndex}
-                  onClick={() => sellSeat(rowIndex, seatIndex)}
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    backgroundColor: soldSeats[rowIndex][seatIndex] ? 'red' : 'gray',
-                    border: 'none',
-                    cursor: soldSeats[rowIndex][seatIndex] ? 'not-allowed' : 'pointer',
-                  }}
-                  disabled={soldSeats[rowIndex][seatIndex]}
-                ></button>
-                  ))}
-                </div>
+            <div className="mb-4 text-center text-gray-600">Pantalla</div>
+            <div className="w-full h-2 bg-gray-300 mb-6 rounded-full"></div>
+            
+            <div className="grid grid-cols-10 gap-2 mb-6">
+              {seats.map((row, rowIndex) => (
+                row.map((seat, seatIndex) => (
+                  <button
+                    key={`${rowIndex}-${seatIndex}`}
+                    onClick={() => sellSeat(rowIndex, seatIndex)}
+                    className={`
+                      w-10 h-10 rounded-md transition-all duration-300
+                      ${soldSeats[rowIndex][seatIndex] 
+                        ? 'bg-red-500 cursor-not-allowed opacity-70' 
+                        : 'bg-blue-400 hover:bg-blue-500 cursor-pointer'}
+                      flex items-center justify-center
+                      shadow-md
+                    `}
+                    disabled={soldSeats[rowIndex][seatIndex]}
+                  >
+                    {soldSeats[rowIndex][seatIndex] ? '✖' : `${rowIndex + 1}-${seatIndex + 1}`}
+                  </button>
+                ))
               ))}
             </div>
             
