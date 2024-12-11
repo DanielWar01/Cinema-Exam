@@ -1,83 +1,128 @@
-import { useState } from 'react';
-import './App.css'
+import React, { useState } from 'react';
+
+type Report = {
+  bookedSeats: number;
+  totalSales: number;
+  occupancyRate: string;
+};
 
 function App() {
   const [seats, setSeats] = useState(
-    Array(5).fill(null).map(() => Array(10).fill(false)) // 5 rows, 10 seats per row
+    Array(5).fill(null).map(() => Array(10).fill(false))
   );
+  const [soldSeats, setSoldSeats] = useState(
+    Array(5).fill(null).map(() => Array(10).fill(false))
+  );
+  const [report, setReport] = useState<Report | null>(null);
 
-  const toggleSeat = (rowIndex, seatIndex) => {
-    const newSeats = seats.map((row, rIndex) =>
+  const sellSeat = (rowIndex: number, seatIndex: number) => {
+    if (soldSeats[rowIndex][seatIndex]) {
+      alert('Esta silla ya ha sido vendida.');
+      return;
+    }
+
+    const newSoldSeats = soldSeats.map((row, rIndex) =>
       row.map((seat, sIndex) =>
-        rIndex === rowIndex && sIndex === seatIndex ? !seat : seat
+        rIndex === rowIndex && sIndex === seatIndex ? true : seat
       )
     );
-    setSeats(newSeats);
+    setSoldSeats(newSoldSeats);
+
+    alert(`La silla en la fila ${rowIndex + 1}, columna ${seatIndex + 1} ha sido vendida.`);
   };
 
   const handleReport = () => {
     const totalSeats = seats.flat().length;
-    const bookedSeats = seats.flat().filter(seat => seat).length;
-    const totalSales = bookedSeats * 10; // Assuming $10 per seat
+    const bookedSeats = soldSeats.flat().filter(seat => seat).length;
+    const totalSales = bookedSeats * 10;
     const occupancyRate = ((bookedSeats / totalSeats) * 100).toFixed(2);
 
-    alert(`Reporte:\n- Boletas Vendidas: ${bookedSeats}\n- Total Ventas: $${totalSales}\n- Porcentaje de Ocupación: ${occupancyRate}%`);
+    setReport({
+      bookedSeats,
+      totalSales,
+      occupancyRate,
+    });
   };
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif'}}>
-      <header className='header' style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1>CineMax - Sistema de Reservas</h1>
-        <p>Selecciona tus asientos y genera un reporte.</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <header className="bg-blue-600 text-white py-6 shadow-lg">
+        <div className="container mx-auto text-center">
+          <h1 className="text-3xl font-bold flex items-center justify-center gap-3">
+            🎬 CineMax - Sistema de Reservas
+          </h1>
+          <p className="mt-2 text-blue-100">Selecciona tus asientos y vende las boletas</p>
+        </div>
       </header>
 
-      <section style={{
-        minHeight: '70vh',
-      }}>
-        <h2 className='main-title'>Selección de Sillas</h2>
-        <div style={{ display: 'grid', gap: '10px', justifyContent: 'center' }}>
+      <main className="container mx-auto px-4 py-8 flex-grow">
+        <section className="bg-white rounded-xl shadow-md p-6">
+          <h2 className="text-2xl font-semibold text-center mb-6 text-blue-800">
+            Selección de Sillas
+          </h2>
+          
+          <div className="flex flex-col items-center">
+          <div style={{ display: 'grid', gap: '10px', justifyContent: 'center' }}>
           {seats.map((row, rowIndex) => (
             <div style={{ display: 'flex', gap: '5px' }} key={rowIndex}>
               {row.map((seat, seatIndex) => (
                 <button
                   key={seatIndex}
-                  onClick={() => toggleSeat(rowIndex, seatIndex)}
+                  onClick={() => sellSeat(rowIndex, seatIndex)}
                   style={{
                     width: '30px',
                     height: '30px',
-                    backgroundColor: seat ? 'green' : 'gray',
+                    backgroundColor: soldSeats[rowIndex][seatIndex] ? 'red' : 'gray',
                     border: 'none',
-                    cursor: 'pointer',
+                    cursor: soldSeats[rowIndex][seatIndex] ? 'not-allowed' : 'pointer',
                   }}
+                  disabled={soldSeats[rowIndex][seatIndex]}
                 ></button>
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
-        </div>
-        <section style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button
-            onClick={handleReport}
-            style={{
-              padding: '10px 20px',
-              fontSize: '16px',
-              backgroundColor: '#007BFF',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            Generar Reporte
-          </button>
+            
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleReport}
+                className="
+                  bg-blue-600 text-white px-6 py-3 rounded-lg 
+                  hover:bg-blue-700 transition-colors duration-300 
+                  flex items-center gap-2 font-semibold shadow-md
+                "
+              >
+                Generar Reporte
+              </button>
+            </div>
+          </div>
+
+          {report && (
+            <div className="mt-8 bg-blue-50 p-4 rounded-lg text-center">
+              <h3 className="text-xl font-bold text-blue-800 mb-4">Reporte de Ventas</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-gray-600">Boletas Vendidas</p>
+                  <p className="text-2xl font-bold text-blue-700">{report.bookedSeats}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Total Ventas</p>
+                  <p className="text-2xl font-bold text-green-700">${report.totalSales}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">% Ocupación</p>
+                  <p className="text-2xl font-bold text-purple-700">{report.occupancyRate}%</p>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
-      </section>
+      </main>
 
-
-      <footer>
+      <footer className="bg-blue-800 text-white py-4 text-center">
         <p>Universidad Pedagógica y Tecnológica de Colombia</p>
-        <p>Electiva II - Evaluación en Grupo</p>
-        <p>Fecha: 10 de Diciembre de 2024</p>
+        <p className="text-sm text-blue-200">Electiva II - Evaluación en Grupo</p>
+        <p className="text-xs text-blue-300">Fecha: 10 de Diciembre de 2024</p>
       </footer>
     </div>
   );
